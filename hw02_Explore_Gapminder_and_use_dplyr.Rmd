@@ -1,0 +1,99 @@
+---
+title: 'Homework 02: Explore Gapminder and use dplyr'
+author: "Roger Yu-Hsiang Lo"
+date: '2018-09-20'
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Bring rectangular data in
+
+- Load the `Gapminder` data and `tidyverse` package:
+```{r}
+library(gapminder)
+library(tidyverse)
+```
+
+- Some sanity check to make sure the `Gapminder` data was loaded properly:
+```{r}
+head(gapminder)
+```
+
+- Or we can check the end of the data:
+```{r}
+tail(gapminder)
+```
+
+## Smell test the data
+
+- First, we check what data structure the `Gapminder` data belong to:
+```{r}
+typeof(gapminder)
+```
+
+- We can also check its class:
+```{r}
+class(gapminder)
+```
+
+- Next we see how many variables (i.e., columns) are there in the data:
+```{r}
+ncol(gapminder)
+```
+
+- Similarly, the number of rows indicates the number of observations in the data:
+```{r}
+nrow(gapminder)
+```
+
+- In fact, we can get all the information above just using the function `str()`:
+```{r}
+str(gapminder)
+```
+...This also gives you the data type associated with each variable.
+
+## Explore individual variables
+Suppose that we are interested in the variables `country` and `lifExp`. We might want to know the number of the countries included in this data set or the range of life expectancy. For the fist piece of information, we can check the unique, possible values the variable `country` can take by using:
+```{r}
+unique(gapminder$country)
+```
+
+We can easily obtain the information about the range of life expectancy using the `summary()` function:
+```{r}
+summary(gapminder$lifeExp)
+```
+
+For the variable `lifeExp`, we might also be curious about its distribution. A histogram, in combination with a smoothed denstiy plot, comes in handy for this purpose:
+```{r}
+ggplot(gapminder, aes(x = lifeExp)) +
+  geom_histogram(aes(y = ..density..)) +
+  geom_density()
+```
+
+As can be seen from the plot, the distribution seems to be bimodal, with one peak around 45 and the other around 70.
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
