@@ -6,8 +6,8 @@ Roger Yu-Hsiang Lo
 -   [Bring rectangular data in](#bring-rectangular-data-in)
 -   [Smell test the data](#smell-test-the-data)
 -   [Explore individual variables](#explore-individual-variables)
--   [R Markdown](#r-markdown)
--   [Including Plots](#including-plots)
+-   [Explore variable plot types](#explore-variable-plot-types)
+-   [But I want to do (a bit) more!](#but-i-want-to-do-a-bit-more)
 
 Bring rectangular data in
 -------------------------
@@ -19,50 +19,37 @@ library(gapminder)
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ──────────────────────────────────────────────────── tidyverse 1.2.1 ──
-
-    ## ✔ ggplot2 3.0.0     ✔ purrr   0.2.5
-    ## ✔ tibble  1.4.2     ✔ dplyr   0.7.6
-    ## ✔ tidyr   0.8.1     ✔ stringr 1.3.1
-    ## ✔ readr   1.1.1     ✔ forcats 0.3.0
-
-    ## Warning: package 'dplyr' was built under R version 3.5.1
-
-    ## ── Conflicts ─────────────────────────────────────────────────────── tidyverse_conflicts() ──
-    ## ✖ dplyr::filter() masks stats::filter()
-    ## ✖ dplyr::lag()    masks stats::lag()
-
 -   Some sanity check to make sure the `Gapminder` data was loaded properly:
 
 ``` r
-head(gapminder)
+head(gapminder) %>%
+  knitr::kable(.)
 ```
 
-    ## # A tibble: 6 x 6
-    ##   country     continent  year lifeExp      pop gdpPercap
-    ##   <fct>       <fct>     <int>   <dbl>    <int>     <dbl>
-    ## 1 Afghanistan Asia       1952    28.8  8425333      779.
-    ## 2 Afghanistan Asia       1957    30.3  9240934      821.
-    ## 3 Afghanistan Asia       1962    32.0 10267083      853.
-    ## 4 Afghanistan Asia       1967    34.0 11537966      836.
-    ## 5 Afghanistan Asia       1972    36.1 13079460      740.
-    ## 6 Afghanistan Asia       1977    38.4 14880372      786.
+| country     | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:------------|:----------|-----:|--------:|---------:|----------:|
+| Afghanistan | Asia      |  1952|   28.801|   8425333|   779.4453|
+| Afghanistan | Asia      |  1957|   30.332|   9240934|   820.8530|
+| Afghanistan | Asia      |  1962|   31.997|  10267083|   853.1007|
+| Afghanistan | Asia      |  1967|   34.020|  11537966|   836.1971|
+| Afghanistan | Asia      |  1972|   36.088|  13079460|   739.9811|
+| Afghanistan | Asia      |  1977|   38.438|  14880372|   786.1134|
 
 -   Or we can check the end of the data:
 
 ``` r
-tail(gapminder)
+tail(gapminder) %>%
+  knitr::kable(.)
 ```
 
-    ## # A tibble: 6 x 6
-    ##   country  continent  year lifeExp      pop gdpPercap
-    ##   <fct>    <fct>     <int>   <dbl>    <int>     <dbl>
-    ## 1 Zimbabwe Africa     1982    60.4  7636524      789.
-    ## 2 Zimbabwe Africa     1987    62.4  9216418      706.
-    ## 3 Zimbabwe Africa     1992    60.4 10704340      693.
-    ## 4 Zimbabwe Africa     1997    46.8 11404948      792.
-    ## 5 Zimbabwe Africa     2002    40.0 11926563      672.
-    ## 6 Zimbabwe Africa     2007    43.5 12311143      470.
+| country  | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:---------|:----------|-----:|--------:|---------:|----------:|
+| Zimbabwe | Africa    |  1982|   60.363|   7636524|   788.8550|
+| Zimbabwe | Africa    |  1987|   62.351|   9216418|   706.1573|
+| Zimbabwe | Africa    |  1992|   60.377|  10704340|   693.4208|
+| Zimbabwe | Africa    |  1997|   46.809|  11404948|   792.4500|
+| Zimbabwe | Africa    |  2002|   39.989|  11926563|   672.0386|
+| Zimbabwe | Africa    |  2007|   43.487|  12311143|   469.7093|
 
 Smell test the data
 -------------------
@@ -113,12 +100,14 @@ str(gapminder)
     ##  $ pop      : int  8425333 9240934 10267083 11537966 13079460 14880372 12881816 13867957 16317921 22227415 ...
     ##  $ gdpPercap: num  779 821 853 836 740 ...
 
-...This also gives you the data type associated with each variable.
+This also outputs the data type associated with each variable.
 
 Explore individual variables
 ----------------------------
 
-Suppose that we are interested in the variables `country` and `lifExp`. We might want to know the number of the countries included in this data set or the range of life expectancy. For the fist piece of information, we can check the unique, possible values the variable `country` can take by using:
+-   Suppose that we are interested in the variables `country` and `lifExp`. We might want to know the number of the countries included in this data set or the range of life expectancy.
+
+-   For the fist piece of information, we can check the unique, possible values the variable `country` can take by using:
 
 ``` r
 unique(gapminder$country)
@@ -197,7 +186,7 @@ unique(gapminder$country)
     ## [141] Zambia                   Zimbabwe                
     ## 142 Levels: Afghanistan Albania Algeria Angola Argentina ... Zimbabwe
 
-We can easily obtain the information about the range of life expectancy using the `summary()` function:
+-   We can easily obtain the information about the range of life expectancy using the `summary()` function:
 
 ``` r
 summary(gapminder$lifeExp)
@@ -206,44 +195,149 @@ summary(gapminder$lifeExp)
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##   23.60   48.20   60.71   59.47   70.85   82.60
 
-For the variable `lifeExp`, we might also be curious about its distribution. A histogram, in combination with a smoothed denstiy plot, comes in handy for this purpose:
+-   For the variable `lifeExp`, we might also be curious about its distribution. A histogram, in combination with a smoothed density plot, comes in handy for this purpose:
 
 ``` r
 ggplot(gapminder, aes(x = lifeExp)) +
   geom_histogram(aes(y = ..density..)) +
-  geom_density()
+  geom_density() +
+  labs(x = 'Life Expectancy', y = 'Density')
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-11-1.png" width="75%" style="display: block; margin: auto;" />
 
-![](hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-11-1.png)
+As can be seen from the plot, the distribution seems to be bi-modal, with one peak around 45 and the other around 70.
 
-As can be seen from the plot, the distribution seems to be bimodal, with one peak around 45 and the other around 70.
+Explore variable plot types
+---------------------------
 
-R Markdown
-----------
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+-   Using a bubble plot, we can visualize how both mean GDP and mean life expectancy changed over time across the five continents:
 
 ``` r
-summary(cars)
+gapminder %>%
+  select(-country) %>%  # Remove the country variable from the data set
+  aggregate(. ~ continent + year, data = ., mean) %>% # Average by continent and year
+  ggplot(aes(x = year, y = gdpPercap, color = continent)) +
+  geom_point(aes(size = lifeExp)) +
+  scale_y_log10() +  # Change the scale of y axis
+  labs(x = 'Year', y = 'GDP per capita', color = 'Continent', size = 'Life Expectancy')  # Add labels
 ```
 
-    ##      speed           dist       
-    ##  Min.   : 4.0   Min.   :  2.00  
-    ##  1st Qu.:12.0   1st Qu.: 26.00  
-    ##  Median :15.0   Median : 36.00  
-    ##  Mean   :15.4   Mean   : 42.98  
-    ##  3rd Qu.:19.0   3rd Qu.: 56.00  
-    ##  Max.   :25.0   Max.   :120.00
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-12-1.png" width="75%" style="display: block; margin: auto;" />
 
-Including Plots
----------------
+From the plot, we can see that (mean) GDP increased over the year in each continent. A similar trend can also be spotted for (mean) life expectancy, as the sizes of the circles got larger over the years. Yet the amount of life expectancy increase is not uniform across different continents --- Oceania and Europe had rather minor increases, while Asia and Africa show more dramatic changes.
 
-You can also embed plots, for example:
+-   While mean life expectancy increased over the years across continents, the distribution of life expectancy is not shown in the plot above. To examine its distributional change over the years across different continents (the data from Oceania were excluded because the data are only from Australia and New Zealand. The distribution is therefore not meaningful), we can use a violin plot:
 
-![](hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/pressure-1.png)
+``` r
+gapminder %>%
+  filter(continent != 'Oceania') %>%  # Filter out the data from Oceania
+  ggplot(aes(x = year, y = lifeExp, group = year, color = continent)) +
+  facet_wrap(~ continent) +  # Separate data by continent
+  geom_violin() +
+  labs(x = 'Year', y = 'Life expectancy') +  # Add labels
+  theme(legend.position = 'none')  # Remove legend
+```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-13-1.png" width="75%" style="display: block; margin: auto;" />
+
+Some interesting trends can be observed from the plot:
+
+1.  The distributions in Africa are in general skewed toward the higher end, meaning that higher life expectancy, though present, was still rather rare.
+2.  In Asia, the distributions before 1967 are skewed toward the higher end, but those after 1967 are skewed toward the lower end. This means that higher life expectancy was getting more and more common in Asia.
+3.  The European data are skewed toward the lower end throughout the years. Also, notice that the ranges of life expectancy were getting smaller over the years.
+
+-   A similar plot can be generated for GDP data as well, but this time let us change to a box plot:
+
+``` r
+gapminder %>%
+  filter(continent != 'Oceania') %>%  # Filter out the data from Oceania
+  ggplot(aes(x = year, y = gdpPercap, group = year, color = continent)) +
+  facet_wrap(~ continent) +  # Separate data by continent
+  geom_boxplot() +
+  labs(x = 'Year', y = 'GDP per capita') +  # Add labels
+  theme(legend.position = 'none')  # Remove legend
+```
+
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-14-1.png" width="75%" style="display: block; margin: auto;" />
+
+It is immediately peculiar that there are extreme outliers in the Asia data. It is worthwhile to examine theses outlier data points. We can use the `filter()` function to extract this information:
+
+``` r
+gapminder %>%
+  filter(gdpPercap > 60000) %>%
+  knitr::kable(.)
+```
+
+| country | continent |  year|  lifeExp|     pop|  gdpPercap|
+|:--------|:----------|-----:|--------:|-------:|----------:|
+| Kuwait  | Asia      |  1952|   55.565|  160000|  108382.35|
+| Kuwait  | Asia      |  1957|   58.033|  212846|  113523.13|
+| Kuwait  | Asia      |  1962|   60.470|  358266|   95458.11|
+| Kuwait  | Asia      |  1967|   64.624|  575003|   80894.88|
+| Kuwait  | Asia      |  1972|   67.712|  841934|  109347.87|
+
+The exceptional data points are from Kuwait, which makes sense as the country is rich in oil.
+
+From the plot, we can also see that, discounting the outliers, the ranges of GDP in each continent increased over the years, meaning that the GDP gap between the riches and poorest countries had also increased.
+
+But I want to do (a bit) more!
+------------------------------
+
+-   When evaluating the following code, we did not get the intended results:
+
+``` r
+filter(gapminder, country == c("Rwanda", "Afghanistan")) %>%
+  knitr::kable(.)
+```
+
+| country     | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:------------|:----------|-----:|--------:|---------:|----------:|
+| Afghanistan | Asia      |  1957|   30.332|   9240934|   820.8530|
+| Afghanistan | Asia      |  1967|   34.020|  11537966|   836.1971|
+| Afghanistan | Asia      |  1977|   38.438|  14880372|   786.1134|
+| Afghanistan | Asia      |  1987|   40.822|  13867957|   852.3959|
+| Afghanistan | Asia      |  1997|   41.763|  22227415|   635.3414|
+| Afghanistan | Asia      |  2007|   43.828|  31889923|   974.5803|
+| Rwanda      | Africa    |  1952|   40.000|   2534927|   493.3239|
+| Rwanda      | Africa    |  1962|   43.000|   3051242|   597.4731|
+| Rwanda      | Africa    |  1972|   44.600|   3992121|   590.5807|
+| Rwanda      | Africa    |  1982|   46.218|   5507565|   881.5706|
+| Rwanda      | Africa    |  1992|   23.599|   7290203|   737.0686|
+| Rwanda      | Africa    |  2002|   43.413|   7852401|   785.6538|
+
+The data from some years are missing for Afghanistan and some are missing for Rwanda.
+
+The correct way to extract is to use `%in%` in place of `==`:
+
+``` r
+filter(gapminder, country %in% c("Rwanda", "Afghanistan")) %>%
+  knitr::kable(.)
+```
+
+| country     | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:------------|:----------|-----:|--------:|---------:|----------:|
+| Afghanistan | Asia      |  1952|   28.801|   8425333|   779.4453|
+| Afghanistan | Asia      |  1957|   30.332|   9240934|   820.8530|
+| Afghanistan | Asia      |  1962|   31.997|  10267083|   853.1007|
+| Afghanistan | Asia      |  1967|   34.020|  11537966|   836.1971|
+| Afghanistan | Asia      |  1972|   36.088|  13079460|   739.9811|
+| Afghanistan | Asia      |  1977|   38.438|  14880372|   786.1134|
+| Afghanistan | Asia      |  1982|   39.854|  12881816|   978.0114|
+| Afghanistan | Asia      |  1987|   40.822|  13867957|   852.3959|
+| Afghanistan | Asia      |  1992|   41.674|  16317921|   649.3414|
+| Afghanistan | Asia      |  1997|   41.763|  22227415|   635.3414|
+| Afghanistan | Asia      |  2002|   42.129|  25268405|   726.7341|
+| Afghanistan | Asia      |  2007|   43.828|  31889923|   974.5803|
+| Rwanda      | Africa    |  1952|   40.000|   2534927|   493.3239|
+| Rwanda      | Africa    |  1957|   41.500|   2822082|   540.2894|
+| Rwanda      | Africa    |  1962|   43.000|   3051242|   597.4731|
+| Rwanda      | Africa    |  1967|   44.100|   3451079|   510.9637|
+| Rwanda      | Africa    |  1972|   44.600|   3992121|   590.5807|
+| Rwanda      | Africa    |  1977|   45.000|   4657072|   670.0806|
+| Rwanda      | Africa    |  1982|   46.218|   5507565|   881.5706|
+| Rwanda      | Africa    |  1987|   44.020|   6349365|   847.9912|
+| Rwanda      | Africa    |  1992|   23.599|   7290203|   737.0686|
+| Rwanda      | Africa    |  1997|   36.087|   7212583|   589.9445|
+| Rwanda      | Africa    |  2002|   43.413|   7852401|   785.6538|
+| Rwanda      | Africa    |  2007|   46.242|   8860588|   863.0885|

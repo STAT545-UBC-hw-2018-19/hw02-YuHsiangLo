@@ -9,25 +9,27 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, out.width = '75%', fig.align = 'center')
 ```
 
 ## Bring rectangular data in
 
 - Load the `Gapminder` data and `tidyverse` package:
-```{r}
+```{r, warning = FALSE}
 library(gapminder)
 library(tidyverse)
 ```
 
 - Some sanity check to make sure the `Gapminder` data was loaded properly:
 ```{r}
-head(gapminder)
+head(gapminder) %>%
+  knitr::kable(.)
 ```
 
 - Or we can check the end of the data:
 ```{r}
-tail(gapminder)
+tail(gapminder) %>%
+  knitr::kable(.)
 ```
 
 ## Smell test the data
@@ -56,44 +58,118 @@ nrow(gapminder)
 ```{r}
 str(gapminder)
 ```
-...This also gives you the data type associated with each variable.
+
+This also outputs the data type associated with each variable.
 
 ## Explore individual variables
-Suppose that we are interested in the variables `country` and `lifExp`. We might want to know the number of the countries included in this data set or the range of life expectancy. For the fist piece of information, we can check the unique, possible values the variable `country` can take by using:
+
+- Suppose that we are interested in the variables `country` and `lifExp`. We might want to know the number of the countries included in this data set or the range of life expectancy.
+
+- For the fist piece of information, we can check the unique, possible values the variable `country` can take by using:
 ```{r}
 unique(gapminder$country)
 ```
 
-We can easily obtain the information about the range of life expectancy using the `summary()` function:
+- We can easily obtain the information about the range of life expectancy using the `summary()` function:
 ```{r}
 summary(gapminder$lifeExp)
 ```
 
-For the variable `lifeExp`, we might also be curious about its distribution. A histogram, in combination with a smoothed denstiy plot, comes in handy for this purpose:
+- For the variable `lifeExp`, we might also be curious about its distribution. A histogram, in combination with a smoothed density plot, comes in handy for this purpose:
 ```{r}
 ggplot(gapminder, aes(x = lifeExp)) +
   geom_histogram(aes(y = ..density..)) +
-  geom_density()
+  geom_density() +
+  labs(x = 'Life Expectancy', y = 'Density')
 ```
 
-As can be seen from the plot, the distribution seems to be bimodal, with one peak around 45 and the other around 70.
+As can be seen from the plot, the distribution seems to be bi-modal, with one peak around 45 and the other around 70.
 
-## R Markdown
+## Explore variable plot types
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+- Using a bubble plot, we can visualize how both mean GDP and mean life expectancy changed over time across the five continents:
+```{r}
+gapminder %>%
+  select(-country) %>%  # Remove the country variable from the data set
+  aggregate(. ~ continent + year, data = ., mean) %>% # Average by continent and year
+  ggplot(aes(x = year, y = gdpPercap, color = continent)) +
+  geom_point(aes(size = lifeExp)) +
+  scale_y_log10() +  # Change the scale of y axis
+  labs(x = 'Year', y = 'GDP per capita', color = 'Continent', size = 'Life Expectancy')  # Add labels
 ```
 
-## Including Plots
+From the plot, we can see that (mean) GDP increased over the year in each continent. A similar trend can also be spotted for (mean) life expectancy, as the sizes of the circles got larger over the years. Yet the amount of life expectancy increase is not uniform across different continents --- Oceania and Europe had rather minor increases, while Asia and Africa show more dramatic changes.
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+- While mean life expectancy increased over the years across continents, the distribution of life expectancy is not shown in the plot above. To examine its distributional change over the years across different continents (the data from Oceania were excluded because the data are only from Australia and New Zealand. The distribution is therefore not meaningful), we can use a violin plot:
+```{r}
+gapminder %>%
+  filter(continent != 'Oceania') %>%  # Filter out the data from Oceania
+  ggplot(aes(x = year, y = lifeExp, group = year, color = continent)) +
+  facet_wrap(~ continent) +  # Separate data by continent
+  geom_violin() +
+  labs(x = 'Year', y = 'Life expectancy') +  # Add labels
+  theme(legend.position = 'none')  # Remove legend
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Some interesting trends can be observed from the plot:
+
+1. The distributions in Africa are in general skewed toward the higher end, meaning that higher life expectancy, though present, was still rather rare.
+2. In Asia, the distributions before 1967 are skewed toward the higher end, but those after 1967 are skewed toward the lower end. This means that higher life expectancy was getting more and more common in Asia.
+3. The European data are skewed toward the lower end throughout the years. Also, notice that the ranges of life expectancy were getting smaller over the years.
+
+- A similar plot can be generated for GDP data as well, but this time let us change to a box plot:
+```{r}
+gapminder %>%
+  filter(continent != 'Oceania') %>%  # Filter out the data from Oceania
+  ggplot(aes(x = year, y = gdpPercap, group = year, color = continent)) +
+  facet_wrap(~ continent) +  # Separate data by continent
+  geom_boxplot() +
+  labs(x = 'Year', y = 'GDP per capita') +  # Add labels
+  theme(legend.position = 'none')  # Remove legend
+```
+
+It is immediately peculiar that there are extreme outliers in the Asia data. It is worthwhile to examine theses outlier data points. We can use the `filter()` function to extract this information:
+```{r}
+gapminder %>%
+  filter(gdpPercap > 60000) %>%
+  knitr::kable(.)
+```
+
+The exceptional data points are from Kuwait, which makes sense as the country is rich in oil.
+
+From the plot, we can also see that, discounting the outliers, the ranges of GDP in each continent increased over the years, meaning that the GDP gap between the riches and poorest countries had also increased.
+
+## But I want to do (a bit) more!
+
+- When evaluating the following code, we did not get the intended results:
+```{r}
+filter(gapminder, country == c("Rwanda", "Afghanistan")) %>%
+  knitr::kable(.)
+```
+
+The data from some years are missing for Afghanistan and some are missing for Rwanda.
+
+The correct way to extract is to use `%in%` in place of `==`:
+```{r}
+filter(gapminder, country %in% c("Rwanda", "Afghanistan")) %>%
+  knitr::kable(.)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
