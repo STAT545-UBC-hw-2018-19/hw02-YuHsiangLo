@@ -7,6 +7,7 @@ Roger Yu-Hsiang Lo
 -   [Smell test the data](#smell-test-the-data)
 -   [Explore individual variables](#explore-individual-variables)
 -   [Explore variable plot types](#explore-variable-plot-types)
+-   [Use `filter()`, `select()` and `%>%`](#use-filter-select-and)
 -   [But I want to do (a bit) more!](#but-i-want-to-do-a-bit-more)
 
 Bring rectangular data in
@@ -186,6 +187,22 @@ unique(gapminder$country)
     ## [141] Zambia                   Zimbabwe                
     ## 142 Levels: Afghanistan Albania Algeria Angola Argentina ... Zimbabwe
 
+-   We might also be interested in the number of countries in each continent, whose data are included in `Gapminder`; we can use the `aggregate` function in this case:
+
+``` r
+gapminder %>%
+  aggregate(country ~ continent, data = ., function(x) length(unique(x))) %>%
+  knitr::kable(.)
+```
+
+| continent |  country|
+|:----------|--------:|
+| Africa    |       52|
+| Americas  |       25|
+| Asia      |       33|
+| Europe    |       30|
+| Oceania   |        2|
+
 -   We can easily obtain the information about the range of life expectancy using the `summary()` function:
 
 ``` r
@@ -204,7 +221,7 @@ ggplot(gapminder, aes(x = lifeExp)) +
   labs(x = 'Life Expectancy', y = 'Density')
 ```
 
-<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-11-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-12-1.png" width="75%" style="display: block; margin: auto;" />
 
 As can be seen from the plot, the distribution seems to be bi-modal, with one peak around 45 and the other around 70.
 
@@ -223,7 +240,7 @@ gapminder %>%
   labs(x = 'Year', y = 'GDP per capita', color = 'Continent', size = 'Life Expectancy')  # Add labels
 ```
 
-<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-12-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-13-1.png" width="75%" style="display: block; margin: auto;" />
 
 From the plot, we can see that (mean) GDP increased over the year in each continent. A similar trend can also be spotted for (mean) life expectancy, as the sizes of the circles got larger over the years. Yet the amount of life expectancy increase is not uniform across different continents --- Oceania and Europe had rather minor increases, while Asia and Africa show more dramatic changes.
 
@@ -239,7 +256,46 @@ gapminder %>%
   theme(legend.position = 'none')  # Remove legend
 ```
 
-<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-13-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-14-1.png" width="75%" style="display: block; margin: auto;" />
+
+There are clearly outliers in Asia (`lifeExp` &lt; 50 after 1982) and Europe (`lifeExp` &lt; 60 before 1984) . To see these data points, we can use:
+
+``` r
+gapminder %>%
+  filter(continent == 'Asia', year > 1982, lifeExp < 50) %>%
+  knitr::kable(.)
+```
+
+| country     | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:------------|:----------|-----:|--------:|---------:|----------:|
+| Afghanistan | Asia      |  1987|   40.822|  13867957|   852.3959|
+| Afghanistan | Asia      |  1992|   41.674|  16317921|   649.3414|
+| Afghanistan | Asia      |  1997|   41.763|  22227415|   635.3414|
+| Afghanistan | Asia      |  2002|   42.129|  25268405|   726.7341|
+| Afghanistan | Asia      |  2007|   43.828|  31889923|   974.5803|
+
+``` r
+gapminder %>%
+  filter(continent == 'Europe', year < 1984, lifeExp < 60) %>%
+  knitr::kable(.)
+```
+
+| country                | continent |  year|  lifeExp|       pop|  gdpPercap|
+|:-----------------------|:----------|-----:|--------:|---------:|----------:|
+| Albania                | Europe    |  1952|   55.230|   1282697|  1601.0561|
+| Albania                | Europe    |  1957|   59.280|   1476505|  1942.2842|
+| Bosnia and Herzegovina | Europe    |  1952|   53.820|   2791000|   973.5332|
+| Bosnia and Herzegovina | Europe    |  1957|   58.450|   3076000|  1353.9892|
+| Bulgaria               | Europe    |  1952|   59.600|   7274900|  2444.2866|
+| Montenegro             | Europe    |  1952|   59.164|    413834|  2647.5856|
+| Portugal               | Europe    |  1952|   59.820|   8526050|  3068.3199|
+| Serbia                 | Europe    |  1952|   57.996|   6860147|  3581.4594|
+| Turkey                 | Europe    |  1952|   43.585|  22235677|  1969.1010|
+| Turkey                 | Europe    |  1957|   48.079|  25670939|  2218.7543|
+| Turkey                 | Europe    |  1962|   52.098|  29788695|  2322.8699|
+| Turkey                 | Europe    |  1967|   54.336|  33411317|  2826.3564|
+| Turkey                 | Europe    |  1972|   57.005|  37492953|  3450.6964|
+| Turkey                 | Europe    |  1977|   59.507|  42404033|  4269.1223|
 
 Some interesting trends can be observed from the plot:
 
@@ -259,7 +315,7 @@ gapminder %>%
   theme(legend.position = 'none')  # Remove legend
 ```
 
-<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-14-1.png" width="75%" style="display: block; margin: auto;" />
+<img src="hw02_Explore_Gapminder_and_use_dplyr_files/figure-markdown_github/unnamed-chunk-17-1.png" width="75%" style="display: block; margin: auto;" />
 
 It is immediately peculiar that there are extreme outliers in the Asia data. It is worthwhile to examine theses outlier data points. We can use the `filter()` function to extract this information:
 
@@ -280,6 +336,11 @@ gapminder %>%
 The exceptional data points are from Kuwait, which makes sense as the country is rich in oil.
 
 From the plot, we can also see that, discounting the outliers, the ranges of GDP in each continent increased over the years, meaning that the GDP gap between the riches and poorest countries had also increased.
+
+Use `filter()`, `select()` and `%>%`
+------------------------------------
+
+These functions were used throughout this report already!
 
 But I want to do (a bit) more!
 ------------------------------

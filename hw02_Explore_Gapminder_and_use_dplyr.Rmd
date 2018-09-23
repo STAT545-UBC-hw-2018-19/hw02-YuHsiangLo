@@ -70,6 +70,14 @@ This also outputs the data type associated with each variable.
 unique(gapminder$country)
 ```
 
+- We might also be interested in the number of countries in each continent, whose data are included in `Gapminder`; we can use the `aggregate` function in this case:
+```{r}
+gapminder %>%
+  aggregate(country ~ continent, data = ., function(x) length(unique(x))) %>%
+  knitr::kable(.)
+```
+
+
 - We can easily obtain the information about the range of life expectancy using the `summary()` function:
 ```{r}
 summary(gapminder$lifeExp)
@@ -111,6 +119,19 @@ gapminder %>%
   theme(legend.position = 'none')  # Remove legend
 ```
 
+There are clearly outliers in Asia (`lifeExp` < 50 after 1982) and Europe (`lifeExp` < 60 before 1984) . To see these data points, we can use:
+```{r}
+gapminder %>%
+  filter(continent == 'Asia', year > 1982, lifeExp < 50) %>%
+  knitr::kable(.)
+```
+
+```{r}
+gapminder %>%
+  filter(continent == 'Europe', year < 1984, lifeExp < 60) %>%
+  knitr::kable(.)
+```
+
 Some interesting trends can be observed from the plot:
 
 1. The distributions in Africa are in general skewed toward the higher end, meaning that higher life expectancy, though present, was still rather rare.
@@ -138,6 +159,10 @@ gapminder %>%
 The exceptional data points are from Kuwait, which makes sense as the country is rich in oil.
 
 From the plot, we can also see that, discounting the outliers, the ranges of GDP in each continent increased over the years, meaning that the GDP gap between the riches and poorest countries had also increased.
+
+## Use `filter()`, `select()` and `%>%`
+
+These functions were used throughout this report already!
 
 ## But I want to do (a bit) more!
 
